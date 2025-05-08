@@ -25,6 +25,6 @@ module.exports = {
   // Worker configuration
   worker: {
     enabled: process.env.WORKER_ENABLED === 'true' || true,
-    checkInterval: process.env.WORKER_CHECK_INTERVAL || '0 * * * *',
+    checkInterval: process.env.WORKER_CHECK_INTERVAL || '*/15 * * * *',
   }
 };

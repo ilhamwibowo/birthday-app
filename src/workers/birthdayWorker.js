@@ -73,13 +73,25 @@ class BirthdayWorker {
       let failCount = 0;
       
       for (const user of users) {
-        try {
-          await notificationService.sendBirthdayMessage(user);
-          successCount++;
-          logger.info(`Birthday message sent to ${user.email}`);
-        } catch (err) {
-          failCount++;
-          logger.error(`Failed to process birthday for user ${user.id}: ${err.message}`);
+        let attempt = 0;
+        
+        while (attempt < config.worker.maxAttempts) {
+          try {
+            await notificationService.sendBirthdayMessage(user);
+            successCount++;
+            logger.info(`Birthday message sent to ${user.email} (attempt ${attempt + 1})`);
+            break;
+          } catch (err) {
+            attempt++;
+            if (attempt >= config.worker.maxAttempts) {
+              failCount++;
+              logger.error(`Failed to send birthday message to ${user.email} after ${config.worker.maxAttempts} attempts: ${err.message}`);
+            } else {
+              const delay = config.worker.baseDelay * Math.pow(2, attempt - 1); // 2 ** x
+              logger.warn(`Retrying to send birthday message to ${user.email} (attempt ${attempt}) after ${delay}ms`);
+              await new Promise(res => setTimeout(res, delay));
+            }
+          }
         }
       }
       

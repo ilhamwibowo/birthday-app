@@ -12,6 +12,10 @@ class NotificationService {
    */
   async sendBirthdayMessage(user) {
     try {
+      // 50/50 chance to fail
+      if (Math.random() < 0.5) {
+        throw new Error('Simulated send failure');
+      }
       const message = this._generateBirthdayMessage(user);
       
       logger.info(`BIRTHDAY NOTIFICATION - To: ${user.email}`);

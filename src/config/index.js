@@ -26,5 +26,7 @@ module.exports = {
   worker: {
     enabled: process.env.WORKER_ENABLED === 'true' || true,
     checkInterval: process.env.WORKER_CHECK_INTERVAL || '*/15 * * * *',
+    maxAttempts: parseInt(process.env.WORKER_MAX_ATTEMPTS, 10) || 3,
+    baseDelay: parseInt(process.env.WORKER_BASE_DELAY, 10) || 1000,
   }
 };

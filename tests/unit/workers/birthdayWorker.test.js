@@ -21,6 +21,7 @@ jest.mock('node-cron', () => ({
 describe('Birthday Worker', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    userService.findUsersForBirthdayNotification = jest.fn();
   });
 
   describe('start', () => {
@@ -72,22 +73,18 @@ describe('Birthday Worker', () => {
         { id: 'user2', email: 'user2@example.com', timezone: 'Europe/London' }
       ];
       
-      userService.getUsersWithBirthdayToday.mockResolvedValue(mockUsers);
-      
-      notificationService.isBirthdayMessageTime.mockImplementation((user) => {
-        return user.id === 'user1';
-      });
+      userService.getUsersForBirthdayNotification.mockResolvedValue(mockUsers);
       
       notificationService.sendBirthdayMessage.mockResolvedValue(true);
 
       await birthdayWorker.processBirthdays();
 
-      expect(userService.getUsersWithBirthdayToday).toHaveBeenCalled();
-      expect(notificationService.isBirthdayMessageTime).toHaveBeenCalledTimes(2);
-      expect(notificationService.sendBirthdayMessage).toHaveBeenCalledTimes(1);
+      expect(userService.getUsersForBirthdayNotification).toHaveBeenCalled();
+      expect(notificationService.sendBirthdayMessage).toHaveBeenCalledTimes(2); // Should be called for both users
       expect(notificationService.sendBirthdayMessage).toHaveBeenCalledWith(mockUsers[0]);
+      expect(notificationService.sendBirthdayMessage).toHaveBeenCalledWith(mockUsers[1]);
       expect(birthdayWorker.processLock).toBe(false);
-      expect(logger.info).toHaveBeenCalledWith('Birthday processing complete. Success: 1, Failed: 0');
+      expect(logger.info).toHaveBeenCalledWith('Birthday processing complete. Success: 2, Failed: 0'); // Both should succeed now
     });
 
     it('should handle errors when sending notifications', async () => {
@@ -97,8 +94,7 @@ describe('Birthday Worker', () => {
         { id: 'user1', email: 'user1@example.com', timezone: 'America/New_York' }
       ];
       
-      userService.getUsersWithBirthdayToday.mockResolvedValue(mockUsers);
-      notificationService.isBirthdayMessageTime.mockReturnValue(true);
+      userService.getUsersForBirthdayNotification.mockResolvedValue(mockUsers);
       notificationService.sendBirthdayMessage.mockRejectedValue(new Error('Failed to send'));
 
       await birthdayWorker.processBirthdays();
@@ -114,13 +110,13 @@ describe('Birthday Worker', () => {
       await birthdayWorker.processBirthdays();
 
       expect(logger.warn).toHaveBeenCalledWith('Birthday processing already in progress, skipping');
-      expect(userService.getUsersWithBirthdayToday).not.toHaveBeenCalled();
+      expect(userService.getUsersForBirthdayNotification).not.toHaveBeenCalled();
     });
 
     it('should handle errors in the main processing function', async () => {
       birthdayWorker.processLock = false;
       
-      userService.getUsersWithBirthdayToday.mockRejectedValue(new Error('Database error'));
+      userService.getUsersForBirthdayNotification.mockRejectedValue(new Error('Database error'));
 
       await birthdayWorker.processBirthdays();
 

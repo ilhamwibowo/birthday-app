@@ -122,14 +122,14 @@ describe('User Service', () => {
     });
   });
 
-  describe('getUsersWithBirthdayToday', () => {
+  describe('getUsersForBirthdayNotification', () => {
     it('should return users with birthday today', async () => {
       const mockUsers = [{ id: 'user123', name: 'Birthday User' }];
-      userRepository.findUsersWithBirthdayToday.mockResolvedValue(mockUsers);
+      userRepository.findUsersForBirthdayNotification.mockResolvedValue(mockUsers);
 
-      const result = await userService.getUsersWithBirthdayToday();
+      const result = await userService.getUsersForBirthdayNotification();
 
-      expect(userRepository.findUsersWithBirthdayToday).toHaveBeenCalled();
+      expect(userRepository.findUsersForBirthdayNotification).toHaveBeenCalled();
       expect(result).toEqual(mockUsers);
     });
   });

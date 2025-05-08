@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
   timezone: {
     type: String,
     required: [true, 'Timezone is required'],
+    index: true,
     validate: {
       validator: function(value) {
         return moment.tz.zone(value) !== null;

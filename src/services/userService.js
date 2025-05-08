@@ -83,12 +83,12 @@ class UserService {
   }
 
   /**
-   * Get all users with birthdays today in their respective timezones
-   * Used by the birthday worker
-   * @returns {Promise<Array>} Users with birthdays today
+   * Get users eligible for birthday notification
+   * Used by the notification service
+   * @returns {Promise<Array>} Users eligible for birthday notification
    */
-  async getUsersWithBirthdayToday() {
-    return userRepository.findUsersWithBirthdayToday();
+  async getUsersForBirthdayNotification() {
+    return userRepository.findUsersForBirthdayNotification();
   }
 }
 

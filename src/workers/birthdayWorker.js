@@ -66,23 +66,17 @@ class BirthdayWorker {
       logger.info('Processing birthdays...');
       
       // Get users with birthdays today (in their local timezone)
-      const users = await userService.getUsersWithBirthdayToday();
+      const users = await userService.getUsersForBirthdayNotification();
       logger.info(`Found ${users.length} users with birthdays today`);
       
       let successCount = 0;
       let failCount = 0;
       
-      // Check if its 9 am
       for (const user of users) {
         try {
-          if (notificationService.isBirthdayMessageTime(user)) {
-            await notificationService.sendBirthdayMessage(user);
-            successCount++;
-            logger.info(`Birthday message sent to ${user.email}`);
-          } else {
-            const userTime = moment().tz(user.timezone).format('h:mm A');
-            logger.debug(`Not time to send birthday message to ${user.email} (current time: ${userTime})`);
-          }
+          await notificationService.sendBirthdayMessage(user);
+          successCount++;
+          logger.info(`Birthday message sent to ${user.email}`);
         } catch (err) {
           failCount++;
           logger.error(`Failed to process birthday for user ${user.id}: ${err.message}`);

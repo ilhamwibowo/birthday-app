@@ -74,29 +74,45 @@ class UserRepository {
   }
 
   /**
-   * Find users with birthday today in their timezone
-   * @returns {Promise<Array>} Users with birthday today
-   */
-  async findUsersWithBirthdayToday() {
-    const users = await User.find({});
+ * Find users who should receive birthday notifications
+ * @returns {Promise<Array>} Users to notify
+ */
+  async findUsersForBirthdayNotification() {
+    const now = new Date(); // utc
+
+    const usersToNotify = [];
     
-    const usersWithBirthdayToday = users.filter(user => {
-      // Get current date in user's timezone
-      const now = new Date();
-      const userBirthday = new Date(user.birthday);
+    const timezonesResult = await User.distinct('timezone');
+    
+    for (const timezone of timezonesResult) {
+      if (!timezone) continue;
       
-      // Convert to user's timezone
-      const moment = require('moment-timezone');
-      const userNow = moment(now).tz(user.timezone);
+      const options = { timeZone: timezone, hour12: false };
+      const timeInTZ = new Date(now.toLocaleString('en-US', options));
+      const hourInTZ = timeInTZ.getHours();
+      const minuteInTZ = timeInTZ.getMinutes();
       
-      // Check if today is their birthday (ignore year)
-      return userNow.month() === userBirthday.getMonth() && 
-             userNow.date() === userBirthday.getDate();
-    });
-
-
-    return usersWithBirthdayToday;
+      if (hourInTZ === 9 && minuteInTZ >= 0 && minuteInTZ <= 14) {
+        const monthInTZ = timeInTZ.getMonth();
+        const dayInTZ = timeInTZ.getDate();
+        
+        const users = await User.find({
+          timezone: timezone,
+          $expr: {
+            $and: [
+              { $eq: [{ $month: "$birthday" }, monthInTZ + 1] },
+              { $eq: [{ $dayOfMonth: "$birthday" }, dayInTZ] }
+            ]
+          }
+        });
+        
+        usersToNotify.push(...users);
+      }
+    }
+    
+    return usersToNotify;
   }
 }
+
 
 module.exports = new UserRepository();

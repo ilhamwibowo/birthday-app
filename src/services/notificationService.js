@@ -35,21 +35,6 @@ class NotificationService {
     
     return `Happy Birthday, ${user.name}! Have a fantastic day!`;
   }
-
-  /**
-   * Check if it's appropriate to send a birthday message (9 AM in user's timezone)
-   * @param {Object} user - User object
-   * @returns {boolean} True if it's time to send a message
-   */
-  isBirthdayMessageTime(user) {
-    if (!user || !user.timezone) return false;
-    
-
-    const now = moment().tz(user.timezone);
-    const hour = now.hour();
-    
-    return hour === 9;
-  }
 }
 
 module.exports = new NotificationService();

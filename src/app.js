@@ -9,29 +9,29 @@ const loaders = require('./loaders');
  */
 async function startServer() {
   const app = express();
-  
+
   await loaders(app);
-  
+
   app.listen(config.server.port, () => {
-    logger.info(`
-      ################################################
-      🎂 Birthday Reminder Service Started 🎂
-      Server listening on port: ${config.server.port}
-      Environment: ${config.server.environment}
-      ################################################
-    `);
+     logger.info(`
+       ################################################
+       🎂 Birthday Reminder Service Started 🎂
+       Server listening on port: ${config.server.port}
+       Environment: ${config.server.environment}
+       ################################################
+     `);
   });
-  
+
   process.on('uncaughtException', (err) => {
     logger.error('Uncaught exception', err);
     process.exit(1);
   });
-  
+
   process.on('unhandledRejection', (err) => {
     logger.error('Unhandled rejection', err);
     process.exit(1);
   });
-  
+
   return app;
 }
 

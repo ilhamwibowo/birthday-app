@@ -5,7 +5,7 @@ const logger = require('./config/logger');
 const loaders = require('./loaders');
 
 /**
- * Main application entry point
+ * App entry point
  */
 async function startServer() {
   const app = express();
